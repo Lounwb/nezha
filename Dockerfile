@@ -22,6 +22,8 @@ WORKDIR /src
 COPY . .
 
 RUN ./script/fetch-frontends.sh
+RUN go install github.com/swaggo/swag/cmd/swag@v1.16.6
+RUN swag init --pd -d . -g ./cmd/dashboard/main.go -o ./cmd/dashboard/docs --requiredByDefault
 
 ENV CGO_ENABLED=1
 RUN mkdir -p /out
