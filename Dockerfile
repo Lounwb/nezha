@@ -1,46 +1,22 @@
-FROM golang:1.26.3-alpine AS builder
-
-ARG TARGETOS=linux
-ARG TARGETARCH=amd64
-ARG TARGETVARIANT
-ARG VERSION=dev
-
-RUN apk add --no-cache \
-    bash \
-    ca-certificates \
-    curl \
-    build-base \
-    git \
-    musl-dev \
-    sqlite-dev \
-    tar \
-    unzip \
-    yq \
-    zip
-
-WORKDIR /src
-COPY . .
-
-RUN ./script/fetch-frontends.sh
-RUN go install github.com/swaggo/swag/cmd/swag@v1.16.6
-RUN swag init --pd -d . -g ./cmd/dashboard/main.go -o ./cmd/dashboard/docs --requiredByDefault
-
-ENV CGO_ENABLED=1
-RUN mkdir -p /out
-RUN go build \
-    -trimpath \
-    -buildvcs=false \
-    -tags go_json \
-    -ldflags "-s -w -X github.com/nezhahq/nezha/service/singleton.Version=${VERSION}" \
-    -o /out/app \
-    ./cmd/dashboard
-
 FROM alpine:3.22
 
-RUN apk add --no-cache ca-certificates tzdata
+ARG NEZHA_VERSION=v2.0.9
+ARG TARGETARCH=amd64
+
+RUN apk add --no-cache ca-certificates tzdata curl unzip sqlite
 
 WORKDIR /dashboard
-COPY --from=builder /out/app /dashboard/app
+
+RUN case "$TARGETARCH" in \
+      amd64) BIN_ARCH=amd64 ;; \
+      arm64) BIN_ARCH=arm64 ;; \
+      *) echo "unsupported arch: $TARGETARCH" && exit 1 ;; \
+    esac && \
+    curl -fsSL -o /tmp/nezha.zip "https://github.com/nezhahq/nezha/releases/download/${NEZHA_VERSION}/dashboard-linux-${BIN_ARCH}.zip" && \
+    unzip /tmp/nezha.zip -d /dashboard && \
+    rm -f /tmp/nezha.zip && \
+    chmod +x /dashboard/app
+
 COPY ./script/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 

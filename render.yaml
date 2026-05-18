@@ -7,18 +7,12 @@ services:
     autoDeploy: true
     plan: starter
     envVars:
-      - key: PORT
-        value: 8008
-      - key: NZ_LISTEN_PORT
-        value: 8008
       - key: NZ_LISTEN_HOST
         value: 0.0.0.0
       - key: NZ_LOCATION
         value: Asia/Shanghai
       - key: NZ_TSDB_DATA_PATH
         value: /dashboard/data/tsdb
-      - key: NZ_DB
-        value: /dashboard/data/sqlite.db
       - key: TZ
         value: Asia/Shanghai
     disk:
