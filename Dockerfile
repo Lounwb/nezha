@@ -1,6 +1,5 @@
 FROM alpine:3.22
 
-ARG NEZHA_VERSION=v2.0.9
 ARG TARGETARCH=amd64
 
 RUN apk add --no-cache ca-certificates tzdata curl unzip sqlite
@@ -12,8 +11,9 @@ RUN case "$TARGETARCH" in \
       arm64) BIN_ARCH=arm64 ;; \
       *) echo "unsupported arch: $TARGETARCH" && exit 1 ;; \
     esac && \
-    curl -fsSL -o /tmp/nezha.zip "https://github.com/nezhahq/nezha/releases/download/${NEZHA_VERSION}/dashboard-linux-${BIN_ARCH}.zip" && \
+    curl -fsSL -o /tmp/nezha.zip "https://github.com/nezhahq/nezha/releases/latest/download/dashboard-linux-${BIN_ARCH}.zip" && \
     unzip /tmp/nezha.zip -d /dashboard && \
+    if [ ! -f /dashboard/app ] && [ -f "/dashboard/dashboard-linux-${BIN_ARCH}" ]; then mv "/dashboard/dashboard-linux-${BIN_ARCH}" /dashboard/app; fi && \
     rm -f /tmp/nezha.zip && \
     chmod +x /dashboard/app
 
