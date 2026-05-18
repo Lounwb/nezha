@@ -24,11 +24,12 @@ COPY . .
 RUN ./script/fetch-frontends.sh
 
 ENV CGO_ENABLED=1
+RUN mkdir -p /out
 RUN go build \
     -trimpath \
     -buildvcs=false \
     -tags go_json \
-    -ldflags "-s -w -X github.com/nezhahq/nezha/service/singleton.Version=${VERSION} -extldflags '-static -fpic'" \
+    -ldflags "-s -w -X github.com/nezhahq/nezha/service/singleton.Version=${VERSION}" \
     -o /out/app \
     ./cmd/dashboard
 
